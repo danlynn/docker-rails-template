@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+  db:
+    image: mysql:5.5
+    ports:
+      - "3306:3306"
+      - "3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - .:/myapp
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: development
+      MYSQL_USER: rails
+      MYSQL_PASSWORD: password
+
+  web:
+    build: .
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+volumes:
+  db_data:

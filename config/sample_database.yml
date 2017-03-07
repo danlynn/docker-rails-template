@@ -1,0 +1,11 @@
+development: &default
+  adapter: mysql2
+  database: development
+  pool: 5
+  username: rails
+  password: password
+  host: db
+
+test:
+  <<: *default
+  database: test
