@@ -106,26 +106,18 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
       $ docker-compose run --rm db mysqldump -h hostname -u rails -p --result-file=/myapp/dump.sql database_name
       ```
       This command will connect to the database at `hostname` with user `rails` and create a `dump.sql` file in the current project directory.  It will prompt for the password.
-   2. Copy this dump file to your project dir that is shared with the docker container.
-   3. Make sure that the docker-compose 'db' service is running: 
+   2. Copy this dump file to your project dir which is shared with the docker container.
+   3. Make sure that the docker-compose 'db' service is running first: 
       
-      ```
+      ```bash
       $ docker-compose up db
       ```
    4. Import the dump file into the docker db:
       
       ```bash
-      $ docker-compose run --rm db mysql -h db -u rails -p
-      Enter password: 
-      
-      mysql> use development;
-      Database changed
-
-      mysql> source /myapp/dump.sql
-      Query OK, 0 rows affected (0.00 sec)
-      ...
+      $ docker-compose run --rm db mysql -h db -u root --password=password development < development.sql
       ```
-      Note that the database can be dumped to a file in much the same way.
+      Note that the password must be specified in the command since the development.yml files is being redirected to stdin for the import.
 
 8. Verify that database looks good from rails console:
 
