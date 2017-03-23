@@ -117,7 +117,7 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
       ```bash
       $ docker-compose run --rm db mysql -h db -u root --password=password development < development.sql
       ```
-      Note that the password must be specified in the command since the development.yml files is being redirected to stdin for the import.
+      Note that the password must be specified in the command since the development.yml file is being redirected to stdin for the import.
 
 8. Verify that database looks good from rails console:
 
@@ -146,3 +146,52 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
 | `docker-compose run --rm web rails c`   | start the rails console                    |
 | `docker-compose run --rm web bash`      | start bash session                         |
 | `docker-compose run --rm db mysql -h db -u rails -p` | run mysql cli connected to db |
+
+## RubyMine Docker Integration Setup
+
+RubyMine starting with verison 2017.1 can work well with a Rails project that has been setup using the above instructions.  The following shows you how to configure the project to work within RubyMine.
+
+First, we will setup a static IP for your laptop that can always be accessed from the container regardless of what wifi network you are currently connected to.  This avoids issues with dynamic IPs and the host IP specified in your project's 'config/database.yml' file.
+
+Then, we will setup a RubyMine with a Docker deployment, deployment runtime configuration, and a remote Ruby SDK for Docker.
+
+Before doing any of the following, be sure to stop your docker-compose containers if they are already running:
+
+```bash
+$ docker-compose stop
+```
+
+### Configure Static IP
+
+1. Execute the following on the command line in order to associate '192.168.111.111' with your laptop's loopback interface.
+   
+   ```bash
+   $ sudo ifconfig lo0 alias 192.168.111.111
+   ```
+2. Modify 'config/database.yml' changing all the 'host' values to '192.168.111.111'
+
+### Setup RubyMine
+
+1. Add the 'Docker integration' plugin in Settings > Plugins then click the 'Install JetBrains plugin...'
+2. Add a Docker deployment in Settings > Build, Execution, Deployment > Docker by clicking the '+' button.
+   1. Change the 'API URL' to: "unix:///var/run/docker.sock" (when using Docker for Mac)
+   2. Clear the 'Certificates folder' field
+   3. Set the 'Docker Compose executable' to "/usr/local/bin/docker-compose"
+3. Create docker deployment runtime configuration
+   1. Select Run > Edit Configurations...
+   2. Click the '+' button and select 'Docker Deployment' from the options
+   3. Name the deployment "Docker Deployment"
+   4. Select the 'Server' that you created in step 2 (probably "Docker")
+   5. Select the 'Deployment' type of "docker-compose.yml"
+   6. Click 'OK'
+4. Run the docker deployment (build & start the containers)
+   1. Select "Docker Deployment" from the runtime configurations list in the toolbar
+   2. Click the run button.
+   
+   This will open the 'Docker' tool window.  You can see the deployed containers and their logs here.  You can also stop/restart/redeploy the Docker containers here.  For example, after changing the Gemfile, you would want to click the 'Compose: docker-compose.yml' node and click the 'Redeploy' button on the left in order to rebuild the gems and restart the containers.
+5. Add a remote Ruby SDK in Settings > Languages & Frameworks > Ruby SDK and Gems by clicking the '+' button and selecting 'New remote...'
+   1. Select 'Docker' as the Remote Ruby Interpreter type
+   2. Select the 'Server' name that you created in step 2 (probably "Docker")
+   3. Select the 'Image name' that was created by running the deployment in step 4. This image will default to the name of the rails project directory (without spaces) with the docker-compose service name ("web") appended after an "_" then followed by a ":latest". (eg: "testrails_web:latest").
+   4. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
+   5. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems.
