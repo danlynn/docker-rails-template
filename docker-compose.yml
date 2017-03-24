@@ -9,7 +9,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - .:/myapp
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: development
