@@ -102,7 +102,7 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
 7. Copy database data from your old db to the new docker db.
    1. Create an mysql dump of your database from your old mysql instance (alternatively, Sequel Pro can do this).  The dump file should be in SQL format and contain both schema and content.
       
-      ```
+      ```bash
       $ docker-compose run --rm db mysqldump -h hostname -u rails -p --result-file=/myapp/dump.sql database_name
       ```
       This command will connect to the database at `hostname` with user `rails` and create a `dump.sql` file in the current project directory.  It will prompt for the password.
@@ -121,13 +121,13 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
 
 8. Verify that database looks good from rails console:
 
-    ```
+    ```bash
     docker-compose run --rm web rails c
     ```
 
 9. Start the rails app:
 
-    ```
+    ```bash
     docker-compose up
     ```
 
@@ -161,14 +161,128 @@ Before doing any of the following, be sure to stop your docker-compose container
 $ docker-compose stop
 ```
 
-### Configure Static IP
+### Reconfigure database.yml
+
+1. Modify 'config/database.yml' changing all the 'host' values to '192.168.111.111'
+
+### Configure temporary static IP
 
 1. Execute the following on the command line in order to associate '192.168.111.111' with your laptop's loopback interface.
    
    ```bash
    $ sudo ifconfig lo0 alias 192.168.111.111
    ```
-2. Modify 'config/database.yml' changing all the 'host' values to '192.168.111.111'
+   
+   Note, however, that this will only last until the next reboot.  If you want this IP alias to be permanent then you will need to perform the steps in the following section.
+   
+### Make the temporary static IP permanent
+
+In order to make this change permanent, we will actually just be setting up a launchd daemon to be ran upon every reboot of your laptop.  Note that you will need sudo permissions in order to perform this step (if you don't run with admin privileges). If you just setup your Mac with default user that was created when you first got your laptop then you will by default have admin privileges.  But, since many advanced users who might be following these instructions will have created a non-privileged user for their regular account, I've added a couple steps here to show you how to temporarily add then remove yourself from the list of sudoers - thus, temporarily granting yourself sudo (root) permissions.
+
+1. If you don't run with admin privileges then perform the following steps to grant yourself sudo access:
+   
+   1. Switch to your admin account, enter your admin password then launch visudo:
+      
+      ```bash
+      $ su admin
+      Password: *****
+      $ sudo visudo
+      Password: *****
+      ```
+      
+      This will open the sudoers file in the 'vi' editor.  Do not attempt to edit the sudoers file in any other way.
+   
+   2. Add your regular account username below the root and %admin group entries like the following (except use your regular username instead of 'danlynn'):
+   
+      ```bash
+      # root and users in group wheel can run anything on any machine as any user
+      root            ALL = (ALL) ALL
+      %admin          ALL = (ALL) ALL
+      danlynn         ALL = (ALL) ALL
+      ```
+      
+      These lines are usually found near the bottom of the file.  After adding that last line, simply save the changes and exit back to the command line.
+   
+2. Create a shell script to execute the IP alias command from the previous section:
+   1. Create a `.login` directory in your home directory
+   
+      ```bash
+      $ cd ~
+      $ mkdir .login
+      $ cd .login
+      $ touch alias_loopback.sh
+      $ open .
+      ```
+      
+   2. That last command should open a Finder window displaying the new file.  Open that file in your favorite editor, add the following, then save it:
+      
+      ```bash
+      #!/bin/sh
+      ifconfig lo0 alias 192.168.111.111
+      ```
+3. Create a launchd daemon plist file to execute the `alias_loopback.sh` file upon startup of your laptop:
+   1. Create the `alias_loopback.plist` daemon plist file and set its ownership and permissions
+      
+      ```bash
+      $ cd /Library/LaunchDaemons/
+      $ sudo touch alias_loopback.plist
+      Password: *****
+      $ sudo chown root:wheel alias_loopback.plist
+      $ sudo chmod 755 alias_loopback.plist
+      ```
+      
+      Note that you will only have to enter your regular user permissions on the first use of sudo.  The elevated sudo permissions will stay in effect for about 5 minutes before being rescinded.
+      
+   2. Open the `alias_loopback.plist` file in your favorite editor (which allows you to authenticate as admin to save changes - like sublime)
+   3. Modify the contents of the `alias_loopback.plist` file as follows:
+      
+      ```xml
+      <plist version="1.0">
+          <dict>
+              <key>Label</key>
+              <string>alias_loopback</string>
+              <key>RunAtLoad</key>
+              <true />
+              <key>Program</key>
+              <string>/Users/danlynn/.login/alias_loopback.sh</string>
+          </dict>
+      </plist>
+      ```
+   4. In theory launchd should see when the file is saved and pick up and run it.  However, if it doesn't then try the following:
+      
+      ```bash
+      $ sudo launchctl unload /Library/LaunchDaemons/alias_loopback.plist
+      $ sudo launchctl load /Library/LaunchDaemons/alias_loopback.plist
+      ```
+      
+   5. Test that the launch control daemon is working by restarting your laptop and then pinging the new static IP alias:
+      
+      ```bash
+      $ ping 192.168.111.111
+      
+      PING 192.168.111.111 (192.168.111.111): 56 data bytes
+      64 bytes from 192.168.111.111: icmp_seq=0 ttl=64 time=0.053 ms
+      64 bytes from 192.168.111.111: icmp_seq=1 ttl=64 time=0.045 ms
+      64 bytes from 192.168.111.111: icmp_seq=2 ttl=64 time=0.050 ms
+      64 bytes from 192.168.111.111: icmp_seq=3 ttl=64 time=0.034 ms
+      ```
+      
+      If you get timeout messages instead of results like this then try going back over these instructions and figuring out what you missed.
+      
+4. Remove yourself from the sudoers file (if you don't run with admin privileges)
+   1. Edit the sudoers file:
+         
+      ```bash
+      sudo visudo
+      Password: *****
+      ```
+   2. Remove your regular username from the list of users with sudo privileges so that it only contains the original root and admin entries like:
+      
+      ```
+      # root and users in group wheel can run anything on any machine as any user
+      root            ALL = (ALL) ALL
+      %admin          ALL = (ALL) ALL
+      ```
 
 ### Setup RubyMine
 
@@ -189,9 +303,17 @@ $ docker-compose stop
    2. Click the run button.
    
    This will open the 'Docker' tool window.  You can see the deployed containers and their logs here.  You can also stop/restart/redeploy the Docker containers here.  For example, after changing the Gemfile, you would want to click the 'Compose: docker-compose.yml' node and click the 'Redeploy' button on the left in order to rebuild the gems and restart the containers.
+   
+   Note that the docker-compose services will not be automatically stopped when exiting out of RubyMine.  You should stop them using the 'Docker' tool window controls - or execute the following:
+   
+   ```bash
+   $ docker-compose stop
+   ```
 5. Add a remote Ruby SDK in Settings > Languages & Frameworks > Ruby SDK and Gems by clicking the '+' button and selecting 'New remote...'
    1. Select 'Docker' as the Remote Ruby Interpreter type
    2. Select the 'Server' name that you created in step 2 (probably "Docker")
    3. Select the 'Image name' that was created by running the deployment in step 4. This image will default to the name of the rails project directory (without spaces) with the docker-compose service name ("web") appended after an "_" then followed by a ":latest". (eg: "testrails_web:latest").
    4. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
    5. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems.
+6. Configure the RubyMine database client to connect to the db service container
+   1. TBD...
