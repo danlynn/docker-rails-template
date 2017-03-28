@@ -29,7 +29,8 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
    ```bash
    $ docker-compose run --rm db mysql -h db -u root -p
    
-   Enter password: 
+   Enter password: *****
+   
    Welcome to the MySQL monitor.  Commands end with ; or \g.
    Your MySQL connection id is 40
    Server version: 5.5.54 MySQL Community Server (GPL)
@@ -97,9 +98,34 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
    ```bash
    $ docker-compose build
    ```
-5. Create the test db as shown above in step 9 above.
-6. Modify existing config/database.yml changing the 'host' values to "db" (the name of the docker-compose db service)
-7. Copy database data from your old db to the new docker db.
+5. Modify existing config/database.yml changing the 'host' values to "db" (the name of the docker-compose db service)
+6. Add rails user and grant them access to the development and test databases:
+
+   ```bash
+   $ docker-compose run --rm db mysql -h db -u root -p
+   
+   Enter password: *****
+   
+   Welcome to the MySQL monitor.  Commands end with ; or \g.
+   Your MySQL connection id is 40
+   Server version: 5.5.54 MySQL Community Server (GPL)
+
+   mysql> grant all privileges on *.* to rails@"%";
+   Query OK, 0 rows affected (0.00 sec)
+   
+   mysql> exit
+   ```
+7. Create the development and test databases:
+
+   ```bash
+   $ docker-compose run --rm web bundle exec rake db:create
+   ```
+   Alternatively, create the dbs, load the schema.rb, and run the seed files:
+   
+   ```bash
+   $ docker-compose run --rm web bundle exec rake db:setup
+   ```
+8. Copy database data from your old db to the new docker db.
    1. Create an mysql dump of your database from your old mysql instance (alternatively, Sequel Pro can do this).  The dump file should be in SQL format and contain both schema and content.
       
       ```bash
@@ -119,16 +145,16 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
       ```
       Note that the password must be specified in the command since the development.yml file is being redirected to stdin for the import.
 
-8. Verify that database looks good from rails console:
+9. Verify that database looks good from rails console:
 
     ```bash
-    docker-compose run --rm web rails c
+    $ docker-compose run --rm web rails c
     ```
 
-9. Start the rails app:
+10. Start the rails app:
 
     ```bash
-    docker-compose up
+    $ docker-compose up
     ```
 
 
