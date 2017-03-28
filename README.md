@@ -325,5 +325,12 @@ In order to make this change permanent, we will actually just be setting up a la
    3. Select the 'Image name' that was created by running the deployment in step 4. This image will default to the name of the rails project directory (without spaces) with the docker-compose service name ("web") appended after an "_" then followed by a ":latest". (eg: "testrails_web:latest").
    4. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
    5. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems.
-6. Configure the RubyMine database client to connect to the db service container
-   1. TBD...
+6. Configure the RubyMine database client to connect to the db service container:
+
+   This is essentially the 100% standard RubyMine technique for setting up the data sources for the integrated Database client.  The database client not only provides a very helpful tool for interacting with the database, but it also helps you configure rubymine to be able to interact with the database directly in order to provide code completion and other introspections.
+   
+   1. Open the Database tool window.  This can be done in multiple ways, but the easiest to describe is probably ctrl+tab then while still holding ctrl hit the 'd' key.
+   2. Click the new connection '+' button at the top-left of the Database tool window and select 'Import from sources...' at the bottom.  This will scan your config/database.yml file and automatically create connections for each.
+   3. Then in the 'Data Sources and Drivers' window that pops up, check to see if a "Download missing driver files" warning is displayed at the bottom.  If it is then this is the first time that you have created a connection to the current type of database (eg: mysql).  Simply click the 'Download' link and RubyMine will take care of the rest.
+   4. Add your your password and click the 'Remember password' checkbox on the right.
+   5. Click 'Test Connection' to verify that it can connect to the database.  If successful then you are done!
