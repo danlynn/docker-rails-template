@@ -251,7 +251,6 @@ In order to make this change permanent, we will actually just be setting up a la
    4. In theory launchd should see when the file is saved and pick up and run it.  However, if it doesn't then try the following:
       
       ```bash
-      $ sudo launchctl unload /Library/LaunchDaemons/alias_loopback.plist
       $ sudo launchctl load /Library/LaunchDaemons/alias_loopback.plist
       ```
       
@@ -267,7 +266,18 @@ In order to make this change permanent, we will actually just be setting up a la
       64 bytes from 192.168.111.111: icmp_seq=3 ttl=64 time=0.034 ms
       ```
       
-      If you get timeout messages instead of results like this then try going back over these instructions and figuring out what you missed.
+      If you get timeout messages instead of results like this then try going back over these instructions and figuring out what you missed.  It might be useful to tail the system log for launchd messages in this case:
+      
+      ```bash
+      $ sudo tail -f /var/log/system.log
+      ```
+      
+      Also, you can stop and restart the daemon without a reboot with:
+      
+      ```bash
+      $ sudo launchctl unload /Library/LaunchDaemons/alias_loopback.plist
+      $ sudo launchctl load /Library/LaunchDaemons/alias_loopback.plist
+      ```
       
 4. Remove yourself from the sudoers file (if you don't run with admin privileges)
    1. Edit the sudoers file:
