@@ -141,9 +141,9 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
    4. Import the dump file into the docker db:
       
       ```bash
-      $ docker-compose run --rm db mysql -h db -u root --password=password development < development.sql
+      $ docker-compose run --rm db mysql -h db -u root --password=password development < dump.sql
       ```
-      Note that the password must be specified in the command since the development.yml file is being redirected to stdin for the import.
+      Note that the password must be specified in the command since the dump.sql file is being redirected to stdin for the import.
 
 9. Verify that database looks good from rails console:
 
