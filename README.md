@@ -146,6 +146,7 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
 | `docker-compose run --rm web rails c`   | start the rails console                    |
 | `docker-compose run --rm web bash`      | start bash session                         |
 | `docker-compose run --rm db mysql -h db -u rails -p` | run mysql cli connected to db |
+| `docker run -it --rm mysql:5.5 mysql -h 192.168.111.111 -u rails -p` | run mysql cli against remote host |
 
 ## RubyMine Docker Integration Setup
 
