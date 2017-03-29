@@ -353,12 +353,22 @@ In order to make this change permanent, we will actually just be setting up a la
    ```bash
    $ docker-compose stop
    ```
-5. Add a remote Ruby SDK in Settings > Languages & Frameworks > Ruby SDK and Gems by clicking the '+' button and selecting 'New remote...'
-   1. Select 'Docker' as the Remote Ruby Interpreter type
-   2. Select the 'Server' name that you created in step 2 (probably "Docker")
-   3. Select the 'Image name' that was created by running the deployment in step 4. This image will default to the name of the rails project directory (without spaces) with the docker-compose service name ("web") appended after an "_" then followed by a ":latest". (eg: "testrails_web:latest").
-   4. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
-   5. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems.
+5. Add a remote Ruby SDK for the docker container
+
+   RubyMine will download all the rubygems from the docker container into a local cache after the ruby SDK is added.  This cache is used for code introspection, db column introspection, etc.  It is also used to determine that certain gems are installed before performing certain tasks like running the rails server from the RubyMine run/debug configurations.  However, when copying the gem directories and file to the local cache, RubyMine skips any gems that have empty directories.  This sounds reasonable, except that certain critical gems ACTUALLY DO have empty gem directories.  Specifically, certain versions of the rails gem (like rails-3.2.21) has an empty gem directory.  This causes RubyMine to refuse to run/debug the Rails server with an error message about the rails gem missing.  To work around this issue, be sure to insert an empty file into the blank rails gem directory in the container by adding a line like the `touch` RUN command below.  It should be placed AFTER the `bundle install` and BEFORE the `VOLUME /usr/local/bundle` lines of the Dockerfile:
+   
+   ```
+   RUN bundle install
+   RUN touch /usr/local/bundle/gems/rails-3.2.21/.keep
+   VOLUME /usr/local/bundle
+   ```
+   
+   1. Go to Settings > Languages & Frameworks > Ruby SDK and Gems then click the '+' button and select 'New remote...'
+   2. Select 'Docker' as the Remote Ruby Interpreter type
+   3. Select the 'Server' name that you created in step 2 (probably "Docker")
+   4. Select the 'Image name' that was created by running the deployment in step 4. This image will default to the name of the rails project directory (without spaces) with the docker-compose service name ("web") appended after an "_" then followed by a ":latest". (eg: "testrails_web:latest").
+   5. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
+   6. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems.
 6. Configure the RubyMine database client to connect to the db service container:
 
    This is essentially the 100% standard RubyMine technique for setting up the data sources for the integrated Database client.  The database client not only provides a very helpful tool for interacting with the database, but it also helps you configure rubymine to be able to interact with the database directly in order to provide code completion and other introspections.
