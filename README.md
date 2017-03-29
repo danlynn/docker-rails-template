@@ -370,7 +370,36 @@ In order to make this change permanent, we will actually just be setting up a la
    5. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
    6. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems (creates local cache).
    7. Click the 'Edit Path Mappings' button (icon button found above list of ruby SDKs) and add a mapping that associates the Rails project directory on your laptop to the `/myapp` directory in the container.  This is required for certain internal RubyMine tools to work correctly (like scanning the names of rake tasks, generators, etc.)
-6. Configure the RubyMine database client to connect to the db service container:
+6. Update the Rails run/debug configurations
+   1. Open each Rails run/debug configuration by first selecting 'Edit Configurations...' from the run/debug configurations drop-down in the RubyMine toolbar.
+   2. Select a Rails configuration
+   3. Click the Add button '+' below the 'Before launch: Activiate tool window' section in the right pane.  Select 'Run External tool' from the drop-down.
+   4. In the 'External Tools' window, click the Add button '+' to open the 'Create Tool' window.
+   5. In the 'Create Tool' window, enter the following info leaving all other defaults:
+
+      | field | value |
+      |-------|-------|
+      | Name: | Start db |
+      | Program: | docker-compose |
+      | Parameters: | start db |
+      ...then click 'OK'
+   6. Now back in the 'External Tools' window, click the Add button '+' again to open the 'Create Tool' window.
+   7. This time, in the 'Create Tool' window, enter the following info:
+
+      | field | value |
+      |-------|-------|
+      | Name: | Stop web |
+      | Program: | docker-compose |
+      | Parameters: | stop web |
+      ...then click 'OK'
+   8. Click 'OK' to dismiss the 'External Tools' window then click 'OK' to dismiss the 'Run/Debug Configurations' window.
+   
+   When adding these 'before launch' tasks to subsequent rails run/debug configurations, you can re-use the 2 tasks that you added by simply clicking to select one and hitting 'OK' in the 'External Tools' window.
+   
+   These 'before launch' tasks will make sure that the db is running and any web container is stopped whenever you 'run' the rails server.
+   
+   You could also simply do these tasks manually in the terminal before running the rails instance if you wanted to.  But, I'm generally to lazy to try to remember to do all that.
+7. Configure the RubyMine database client to connect to the db service container:
 
    This is essentially the 100% standard RubyMine technique for setting up the data sources for the integrated Database client.  The database client not only provides a very helpful tool for interacting with the database, but it also helps you configure rubymine to be able to interact with the database directly in order to provide code completion and other introspections.
    
