@@ -92,14 +92,21 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
 
 1. Copy docker-compose.yml and Dockerfile over from template to your project.
 2. Change the Dockerfile ruby version as desired.
-3. Change the docker-compose.yml `environment` settings `MYSQL_*` to your desired values. Note that the `MYSQL_DATABASE` database will be created when the db image is first built.
-4. Run the following command to rebuild the image with the new gems.  You should re-run this command any time you change the Gemfile.
+3. OPTIONALLY, if you have any unbundled gems located in directories within your rails app, then you will need to be sure to add some `ADD` statements to the Dockerfile so that these unbundled gems will be available when the Dockerfile runs `bundle install`.  These `ADD` statements should precede the `bundle install` line like below:
+
+   ```
+   ADD lib/inmar /myapp/lib/inmar
+   ADD lib/you /myapp/lib/you
+   RUN bundle install
+   ```
+4. Change the docker-compose.yml `environment` settings `MYSQL_*` to your desired values. Note that the `MYSQL_DATABASE` database will be created when the db image is first built.
+5. Run the following command to rebuild the image with the new gems.  You should re-run this command any time you change the Gemfile.
    
    ```bash
    $ docker-compose build
    ```
-5. Modify existing config/database.yml changing the 'host' values to "db" (the name of the docker-compose db service)
-6. Add rails user and grant them access to the development and test databases:
+6. Modify existing config/database.yml changing the 'host' values to "db" (the name of the docker-compose db service)
+7. Add rails user and grant them access to the development and test databases:
 
    ```bash
    $ docker-compose run --rm db mysql -h db -u root -p
@@ -115,7 +122,7 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
    
    mysql> exit
    ```
-7. Create the development and test databases:
+8. Create the development and test databases:
 
    ```bash
    $ docker-compose run --rm web bundle exec rake db:create
@@ -125,7 +132,7 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
    ```bash
    $ docker-compose run --rm web bundle exec rake db:setup
    ```
-8. Copy database data from your old db to the new docker db.
+9. Copy database data from your old db to the new docker db.
    1. Create an mysql dump of your database from your old mysql instance (alternatively, Sequel Pro can do this).  The dump file should be in SQL format and contain both schema and content.
       
       ```bash
@@ -145,13 +152,13 @@ This template is based on the tutorial [Quickstart: Compose and Rails](https://d
       ```
       Note that the password must be specified in the command since the dump.sql file is being redirected to stdin for the import.
 
-9. Verify that database looks good from rails console:
+10. Verify that database looks good from rails console:
 
     ```bash
     $ docker-compose run --rm web rails c
     ```
 
-10. Start the rails app:
+11. Start the rails app:
 
     ```bash
     $ docker-compose up
