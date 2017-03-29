@@ -408,3 +408,54 @@ In order to make this change permanent, we will actually just be setting up a la
    3. Then in the 'Data Sources and Drivers' window that pops up, check to see if a "Download missing driver files" warning is displayed at the bottom.  If it is then this is the first time that you have created a connection to the current type of database (eg: mysql).  Simply click the 'Download' link and RubyMine will take care of the rest.
    4. Add your your password and click the 'Remember password' checkbox on the right.
    5. Click 'Test Connection' to verify that it can connect to the database.  If successful then you are done!
+
+## General RubyMine Workflow
+
+#### Preparing to Open Project
+
+Before launching RubyMine and/or opening your project, you probably want to check to see if any other docker containers are running which may have conflicting ports (db: 3306, web: 3000).  This can be determined by executing the following command which displays all the running docker containers (not just current project containers):
+
+```bash
+$ docker ps
+
+$ docker ps
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                                             NAMES
+1b1213e49179        coredynamicemail_web:latest   "ruby -e $stdout.s..."   4 minutes ago       Up 4 minutes        0.0.0.0:3000->3000/tcp                            practical_meitner
+9465f4000ef2        mysql:5.5                     "docker-entrypoint..."   2 hours ago         Up 8 minutes        0.0.0.0:3306->3306/tcp, 0.0.0.0:32788->3306/tcp   coredynamicemail_db_1
+```
+
+If any of the docker containers listed are NOT for the current project then you can shut them down if they have conflicting ports by going to that other project's dir and doing a `docker-compose stop` or by issuing direct container stop commands via docker using the CONTAINER ID (first column of output) like `docker stop 1b1213e49179`.
+
+### Opening Project
+
+If you are opening the project for the first time then you will need to deploy the project (docker build) via the 'Docker Deployment' run/debug configuration that you created in the 'RubyMine Setup' instructions earlier.  This is done by selecting 'Docker Deployment' from the run/debug configurations drop-down in the RubyMine toolbar then clicking the 'Run' (green triangle icon) button.  This will build/rebuild and launch the project's containers.
+
+If the project's containers are already up to date and the docker containers built (but not necessarily running) then you can skip this step.
+
+### Rake Tasks and Rails Generators
+
+These can be ran in the normal fashion via the rake popup (option+r) and the generator popup (option+g).
+
+### Run the Rails Server
+
+Simply select the desired rails run/debug configuration from the drop-down in the toolbar then hit the 'Run' button (green triangle icon).  This will open up the console output and rails log tabs in the 'Run' tool window at the bottom.
+
+### Bundle Install
+
+Whenever you make changes to the Gemfile, you should rebuild the docker image which in turn runs `bundle install`.  This can be accomplished as follows:
+
+1. Displaying the 'Docker' tool window by clicking the 'Docker' tool button at the botton of the RubyMine window.
+2. Select the "Compose: docker-compose.yml" node at the top.
+3. Click the 'Redeploy' button in the toolbar on the left.
+
+This will rebuild the web container from the Dockerfile reinstalling the gems.
+
+### Closing Project
+
+Simply manually stop the db and web containers with:
+
+```bash
+$ docker-compose stop
+```
+
+...no use leaving them running.
