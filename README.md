@@ -365,10 +365,11 @@ In order to make this change permanent, we will actually just be setting up a la
    
    1. Go to Settings > Languages & Frameworks > Ruby SDK and Gems then click the '+' button and select 'New remote...'
    2. Select 'Docker' as the Remote Ruby Interpreter type
-   3. Select the 'Server' name that you created in step 2 (probably "Docker")
+   3. Select the 'Server' docker deployment name that you created in step 2 (probably "Docker")
    4. Select the 'Image name' that was created by running the deployment in step 4. This image will default to the name of the rails project directory (without spaces) with the docker-compose service name ("web") appended after an "_" then followed by a ":latest". (eg: "testrails_web:latest").
    5. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
-   6. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems.
+   6. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems (creates local cache).
+   7. Click the 'Edit Path Mappings' button (icon button found above list of ruby SDKs) and add a mapping that associates the Rails project directory on your laptop to the `/myapp` directory in the container.  This is required for certain internal RubyMine tools to work correctly (like scanning the names of rake tasks, generators, etc.)
 6. Configure the RubyMine database client to connect to the db service container:
 
    This is essentially the 100% standard RubyMine technique for setting up the data sources for the integrated Database client.  The database client not only provides a very helpful tool for interacting with the database, but it also helps you configure rubymine to be able to interact with the database directly in order to provide code completion and other introspections.
