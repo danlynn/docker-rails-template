@@ -377,21 +377,21 @@ In order to make this change permanent, we will actually just be setting up a la
    4. In the 'External Tools' window, click the Add button '+' to open the 'Create Tool' window.
    5. In the 'Create Tool' window, enter the following info leaving all other defaults:
 
-      | field | value |
-      |-------|-------|
-      | Name: | Start db |
-      | Program: | docker-compose |
-      | Parameters: | start db |
+      | field       | value          |
+      |-------------|----------------|
+      | Name:       | Start db       |
+      | Program:    | docker-compose |
+      | Parameters: | start db       |
       
       ...then click 'OK'
    6. Now back in the 'External Tools' window, click the Add button '+' again to open the 'Create Tool' window.
    7. This time, in the 'Create Tool' window, enter the following info:
 
-      | field | value |
-      |-------|-------|
-      | Name: | Stop web |
-      | Program: | docker-compose |
-      | Parameters: | stop web |
+      | field       | value          |
+      |-------------|----------------|
+      | Name:       | Stop web       |
+      | Program:    | docker-compose |
+      | Parameters: | stop web       |
       
       ...then click 'OK'
    8. Click 'OK' to dismiss the 'External Tools' window then click 'OK' to dismiss the 'Run/Debug Configurations' window.
