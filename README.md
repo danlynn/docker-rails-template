@@ -353,7 +353,7 @@ In order to make this change permanent, we will actually just be setting up a la
    ```bash
    $ docker-compose stop
    ```
-5. Add a remote Ruby SDK for the docker container
+5. Fix any empty gem directories before adding a remote ruby SDK
 
    RubyMine will download all the rubygems from the docker container into a local cache after the ruby SDK is added.  This cache is used for code introspection, db column introspection, etc.  It is also used to determine that certain gems are installed before performing certain tasks like running the rails server from the RubyMine run/debug configurations.  However, when copying the gem directories and file to the local cache, RubyMine skips any gems that have empty directories.  This sounds reasonable, except that certain critical gems ACTUALLY DO have empty gem directories.  Specifically, certain versions of the rails gem (like rails-3.2.21) has an empty gem directory.  This causes RubyMine to refuse to run/debug the Rails server with an error message about the rails gem missing.  To work around this issue, be sure to insert an empty file into the blank rails gem directory in the container by adding a line like the `touch` RUN command below.  It should be placed AFTER the `bundle install` and BEFORE the `VOLUME /usr/local/bundle` lines of the Dockerfile:
    
@@ -363,6 +363,8 @@ In order to make this change permanent, we will actually just be setting up a la
    VOLUME /usr/local/bundle
    ```
    
+6. Add a remote Ruby SDK for the docker container
+
    1. Go to Settings > Languages & Frameworks > Ruby SDK and Gems then click the '+' button and select 'New remote...'
    2. Select 'Docker' as the Remote Ruby Interpreter type
    3. Select the 'Server' docker deployment name that you created in step 2 (probably "Docker")
@@ -370,7 +372,7 @@ In order to make this change permanent, we will actually just be setting up a la
    5. You should be able to leave the 'Ruby interpreter path' as its default "ruby"
    6. Click 'OK' then wait a few secs as RubyMine connects to the container and retrieves the list of deployed gems (creates local cache).
    7. Click the 'Edit Path Mappings' button (icon button found above list of ruby SDKs) and add a mapping that associates the Rails project directory on your laptop to the `/myapp` directory in the container.  This is required for certain internal RubyMine tools to work correctly (like scanning the names of rake tasks, generators, etc.)
-6. Update the Rails run/debug configurations
+7. Update the Rails run/debug configurations
    1. Open each Rails run/debug configuration by first selecting 'Edit Configurations...' from the run/debug configurations drop-down in the RubyMine toolbar.
    2. Select a Rails configuration
    3. Click the Add button '+' below the 'Before launch: Activiate tool window' section in the right pane.  Select 'Run External tool' from the drop-down.
@@ -401,7 +403,7 @@ In order to make this change permanent, we will actually just be setting up a la
    These 'before launch' tasks will make sure that the db is running and any web container is stopped whenever you 'run' the rails server.
    
    You could also simply do these tasks manually in the terminal before running the rails instance if you wanted to.  But, I'm generally to lazy to try to remember to do all that.
-7. Configure the RubyMine database client to connect to the db service container:
+8. Configure the RubyMine database client to connect to the db service container:
 
    This is essentially the 100% standard RubyMine technique for setting up the data sources for the integrated Database client.  The database client not only provides a very helpful tool for interacting with the database, but it also helps you configure rubymine to be able to interact with the database directly in order to provide code completion and other introspections.
    
